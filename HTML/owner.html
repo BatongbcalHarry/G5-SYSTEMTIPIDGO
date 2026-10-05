@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Store Dashboard | TipidGo</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="staff.css">
+  <script src="owner.js" defer></script>
+</head>
+<body class="staff-page">
+  <header class="staff-header">
+    <a class="staff-brand" href="owner.html">TipidGo <span>STORE OWNER</span></a>
+    <div class="staff-header-actions">
+      <span id="ownerName" class="staff-user">Store owner</span>
+      <button id="logoutButton" class="btn" type="button">Log Out</button>
+    </div>
+  </header>
+
+  <main class="staff-main">
+    <div class="staff-heading">
+      <div>
+        <h1 id="storeName">Store prices</h1>
+        <p id="storeLocation">Loading your approved store...</p>
+      </div>
+      <span id="priceCount" class="staff-status">0 prices</span>
+    </div>
+
+    <div id="ownerMessage" class="staff-message" role="status" aria-live="polite"></div>
+
+    <section class="staff-panel">
+      <div class="staff-panel-header">
+        <div>
+          <h2>Add or update a price</h2>
+          <p>Prices are saved only for your approved store.</p>
+        </div>
+      </div>
+      <form id="priceForm" class="owner-price-form">
+        <div class="auth-field">
+          <label for="productSelect">Product</label>
+          <select id="productSelect" required>
+            <option value="">Loading products...</option>
+          </select>
+        </div>
+        <div class="auth-field">
+          <label for="priceInput">Price (PHP)</label>
+          <input id="priceInput" type="number" min="0.01" max="1000000" step="0.01" placeholder="0.00" required>
+        </div>
+        <button id="savePriceButton" class="btn" type="submit">Save price</button>
+      </form>
+    </section>
+
+    <section class="staff-panel">
+      <div class="staff-panel-header">
+        <div>
+          <h2>Your current prices</h2>
+          <p>Only prices belonging to this store are shown.</p>
+        </div>
+        <button id="refreshPrices" class="staff-action" type="button">Refresh</button>
+      </div>
+      <div class="staff-table-wrap">
+        <table class="staff-table">
+          <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Last updated</th></tr></thead>
+          <tbody id="ownerPriceRows"><tr><td colspan="4" class="staff-empty">Loading prices...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

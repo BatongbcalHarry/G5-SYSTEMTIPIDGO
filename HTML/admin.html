@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Administrator Dashboard | TipidGo</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="staff.css">
+  <script src="admin.js" defer></script>
+</head>
+<body class="staff-page">
+  <header class="staff-header">
+    <a class="staff-brand" href="admin.html">TipidGo <span>ADMIN</span></a>
+    <div class="staff-header-actions">
+      <span id="staffName" class="staff-user">Administrator</span>
+      <button id="logoutButton" class="btn" type="button">Log Out</button>
+    </div>
+  </header>
+
+  <div class="staff-shell">
+    <nav class="staff-nav" aria-label="Administrator navigation">
+      <p class="staff-nav-label">Administration</p>
+      <button class="active" type="button" data-view="overview">Overview</button>
+      <button type="button" data-view="applications">Store owner applications <span id="pendingBadge"></span></button>
+      <a href="index.html?workspace=1">Full system workspace</a>
+    </nav>
+
+    <main class="staff-main">
+      <div id="staffMessage" class="staff-message" role="status" aria-live="polite"></div>
+
+      <section data-panel="overview">
+        <div class="staff-heading">
+          <div>
+            <h1>Administrator dashboard</h1>
+            <p>System-wide overview and access to owner approvals.</p>
+          </div>
+        </div>
+        <div class="staff-stats" aria-live="polite">
+          <div class="staff-stat"><span class="staff-stat-label">Products</span><strong id="statProducts" class="staff-stat-value">—</strong></div>
+          <div class="staff-stat"><span class="staff-stat-label">Stores</span><strong id="statStores" class="staff-stat-value">—</strong></div>
+          <div class="staff-stat"><span class="staff-stat-label">Price records</span><strong id="statPrices" class="staff-stat-value">—</strong></div>
+          <div class="staff-stat"><span class="staff-stat-label">Accounts</span><strong id="statUsers" class="staff-stat-value">—</strong></div>
+          <div class="staff-stat"><span class="staff-stat-label">Feedback</span><strong id="statFeedback" class="staff-stat-value">—</strong></div>
+          <div class="staff-stat"><span class="staff-stat-label">Requests</span><strong id="statRequests" class="staff-stat-value">—</strong></div>
+          <div class="staff-stat"><span class="staff-stat-label">Pending owner applications</span><strong id="statPendingOwners" class="staff-stat-value">—</strong></div>
+        </div>
+        <section class="staff-panel">
+          <div class="staff-panel-header">
+            <div>
+              <h2>System access</h2>
+              <p>Use the full workspace for products, stores, prices, feedback, and requests.</p>
+            </div>
+            <a class="btn" href="index.html?workspace=1">Open workspace</a>
+          </div>
+        </section>
+        <section class="staff-panel">
+          <div class="staff-panel-header">
+            <div>
+              <h2>Owner applications</h2>
+              <p>Administrators can review every application and override moderation decisions.</p>
+            </div>
+            <button class="staff-action" type="button" data-view="applications">Review applications</button>
+          </div>
+        </section>
+      </section>
+
+      <section data-panel="applications" hidden>
+        <div class="staff-heading">
+          <div>
+            <h1>Store owner applications</h1>
+            <p>Approve or reject an application. Approved owners can sign in.</p>
+          </div>
+          <div class="staff-toolbar">
+            <label for="applicationFilter">Show</label>
+            <select id="applicationFilter">
+              <option value="all">All statuses</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+        </div>
+        <div class="staff-panel">
+          <div class="staff-table-wrap">
+            <table class="staff-table">
+              <thead><tr><th>Applicant</th><th>Store</th><th>Location</th><th>Store photo</th><th>Submitted</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="applicationRows"><tr><td colspan="7" class="staff-empty">Loading applications...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,397 @@
+/*  GLOBAL STYLES (used by every screen) */
+  *{box-sizing:border-box;}
+  html, body{
+    margin:0;
+    height:100%;
+    font-family:Arial, Helvetica, sans-serif;
+    background-color:#f7f8fa;
+    background-image:url("../tipidgo backround.png");
+    background-position:center;
+    background-repeat:no-repeat;
+    background-size:cover;
+    background-attachment:fixed;
+    color:#111;
+  }
+  .app{
+    display:flex;
+    width:100%;
+    min-height:100vh;
+    background:transparent;
+  }
+
+  /* ---- Sidebar ---- */
+  .sidebar{
+    width:190px;
+    flex-shrink:0;
+    border-right:1px solid rgba(211,220,239,0.95);
+    padding:16px 12px;
+    background:rgba(250,251,254,0.84);
+    backdrop-filter:blur(8px);
+    box-shadow:4px 0 18px rgba(39,76,150,0.08);
+  }
+  .brand{
+    font-weight:bold;
+    color:#2f5cff;
+    font-size:19px;
+    margin-bottom:18px;
+    padding-left:4px;
+  }
+  .navitem{
+    display:block;
+    padding:8px 10px;
+    font-size:13px;
+    color:#333;
+    text-decoration:none;
+    cursor:pointer;
+    border-radius:6px;
+    margin-bottom:2px;
+  }
+  .navitem:hover{
+    background:#eef1ff;
+  }
+  .navitem.active{
+    background:#2f5cff;
+    color:#fff;
+    font-weight:bold;
+  }
+  .sidebar .navitem[hidden]{display:none !important;}
+  .logout{
+    margin-top:40px;
+    font-size:13px;
+    display:block;
+    padding:8px 10px;
+    color:#888;
+    cursor:pointer;
+  }
+  .sidebar .logout{display:none !important;}
+
+  /* ---- Top bar ---- */
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 20px;
+    border-bottom:1px solid #e3e6ee;
+    background:#fff;
+  }
+  .search{
+    padding:8px 12px;
+    border:1px solid #dfe2ea;
+    border-radius:6px;
+    font-size:13px;
+    width:260px;
+  }
+  .search:focus{
+    outline:none;
+    border-color:#2f5cff;
+  }
+  .auth-card{
+    width:calc(100% - 32px);
+    max-width:400px;
+    margin:48px auto;
+    padding:28px;
+    border:1px solid #dfe2ea;
+    border-radius:10px;
+    background:#fff;
+    box-shadow:0 4px 18px rgba(39,76,150,0.12);
+  }
+  .auth-intro{
+    margin:0 0 20px;
+    color:#777;
+    font-size:13px;
+  }
+  .auth-form{
+    display:grid;
+    gap:14px;
+  }
+  .auth-field{
+    display:grid;
+    gap:6px;
+  }
+  .auth-field label{
+    color:#333;
+    font-size:13px;
+    font-weight:bold;
+  }
+  .auth-form .search{
+    width:100%;
+    min-height:42px;
+  }
+  .auth-form .search:focus-visible{
+    outline:2px solid rgba(47,92,255,0.22);
+    outline-offset:1px;
+  }
+  .auth-field small{
+    color:#777;
+    font-size:12px;
+  }
+  .auth-error{
+    min-height:16px;
+    color:#b42318;
+    font-size:12px;
+  }
+  .auth-notice{
+    margin-bottom:12px;
+    padding:10px 12px;
+    border:1px solid #b8dfc4;
+    border-radius:6px;
+    background:#f1fbf4;
+    color:#205c34;
+    font-size:13px;
+    line-height:1.4;
+  }
+  .auth-submit{
+    width:100%;
+    min-height:42px;
+    font-size:14px;
+    font-weight:bold;
+  }
+  .auth-submit:disabled{
+    cursor:wait;
+    opacity:0.7;
+  }
+  .auth-switch{
+    margin:18px 0 0;
+    color:#777;
+    font-size:12px;
+  }
+  .auth-login-options{
+    display:grid;
+    gap:14px;
+    margin-top:16px;
+    padding-top:15px;
+    border-top:1px solid #e3e6ee;
+  }
+  .auth-owner-signup p{
+    margin:0 0 8px;
+    color:#667085;
+    font-size:12px;
+    font-weight:600;
+  }
+  .auth-owner-signup button{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:100%;
+    min-height:42px;
+    padding:8px 12px;
+    border:1px solid #9fb3ff;
+    border-radius:6px;
+    background:#f0f4ff;
+    color:#2148d8;
+    font:inherit;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background-color .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .auth-owner-signup button:hover{
+    border-color:#2f5cff;
+    background:#e3eaff;
+  }
+  .auth-owner-signup button:focus-visible{
+    outline:3px solid rgba(47,92,255,0.24);
+    outline-offset:2px;
+  }
+  .auth-guest-option{
+    margin:0;
+    color:#777;
+    font-size:12px;
+  }
+  .auth-switch-link{
+    padding:0;
+    border:0;
+    background:transparent;
+    color:#2148d8;
+    font:inherit;
+    font-weight:700;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    cursor:pointer;
+  }
+  .auth-switch-link:hover{color:#1636b4;}
+  .auth-switch-link:focus-visible{outline:2px solid rgba(47,92,255,0.35);outline-offset:2px;}
+  @media (max-width:480px){
+    .auth-card{
+      margin:24px auto;
+      padding:22px;
+    }
+  }
+  .user{
+    font-size:13px;
+    color:#2f5cff;
+    font-weight:bold;
+  }
+  .account-badge{
+    position:fixed;
+    top:12px;
+    right:20px;
+    z-index:1000;
+    padding:8px 12px;
+    border:1px solid #dfe2ea;
+    border-radius:6px;
+    background:#fff;
+    box-shadow:0 2px 8px rgba(39,76,150,0.1);
+  }
+  .owner-login-trigger{
+    margin-left:10px;
+    padding:7px 10px;
+    border:1px solid #9fb3ff;
+    border-radius:5px;
+    background:#f0f4ff;
+    color:#2148d8;
+    font:inherit;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .owner-login-trigger:hover{background:#e3eaff;border-color:#2f5cff;}
+  .owner-login-trigger:focus-visible{outline:3px solid rgba(47,92,255,0.24);outline-offset:2px;}
+  .topbar .user{display:none;}
+
+  .main{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+  }
+  .content{
+    padding:22px;
+    flex:1;
+    background:rgba(247,248,250,0.22);
+  }
+
+  /* generic gray placeholder box used all over the wireframe */
+  .placeholder{
+    background:#e6e9f0;
+    border-radius:6px;
+  }
+  .store-map-layout{
+    display:flex;
+    gap:14px;
+    align-items:stretch;
+  }
+  .store-map-panel{
+    flex:1 1 62%;
+    min-width:0;
+  }
+  #storeMap{
+    width:100%;
+    height:360px;
+    border:1px solid #dfe2ea;
+    border-radius:6px;
+    background:#e6e9f0;
+    z-index:0;
+  }
+  .map-location-status{
+    padding:7px 2px 0;
+    color:#4b5563;
+    font-size:12px;
+    line-height:1.4;
+  }
+  .store-list-panel{
+    flex:1 1 38%;
+    min-width:0;
+  }
+  @media (max-width:760px){
+    .store-map-layout{flex-direction:column;}
+    #storeMap{height:320px;}
+  }
+
+  /* generic wireframe table */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+    background:#fff;
+    border-radius:6px;
+    overflow:hidden;
+  }
+  th, td{
+    border-bottom:1px solid #eee;
+    text-align:left;
+    padding:10px;
+  }
+  th{
+    background:#f0f2f8;
+    color:#555;
+    font-size:12px;
+    text-transform:uppercase;
+  }
+  tr:hover td{
+    background:#f7f9ff;
+  }
+
+  /* generic wireframe button */
+  .btn{
+    border:1px solid #2f5cff;
+    background:#2f5cff;
+    color:#fff;
+    padding:6px 14px;
+    font-size:12px;
+    cursor:pointer;
+    border-radius:6px;
+    transition:0.15s;
+  }
+  .btn:hover{
+    background:#1e3fbf;
+  }
+
+  .screen{display:none;}
+  .screen.active{display:block;}
+  .search-hidden{display:none !important;}
+
+  /* ---- Styled Home Screen ---- */
+  .welcome-box{
+    border:1px solid #2f5cff;
+    border-radius:8px;
+    padding:20px;
+    margin-bottom:16px;
+    background:rgba(255,255,255,0.94);
+  }
+  .welcome-box h2{
+    color:#2f5cff;
+    margin:0 0 6px 0;
+  }
+  .welcome-box p{
+    margin:0;
+    color:#555;
+    font-size:14px;
+  }
+  .quickgrid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+  }
+  .quickbox{
+    cursor:pointer;
+    border:1px solid #2f5cff;
+    border-radius:8px;
+    padding:16px;
+    text-align:center;
+    background:rgba(255,255,255,0.74);
+  }
+  .quickbox .icon{
+    font-size:22px;
+    margin-bottom:6px;
+  }
+  .quickbox b{
+    display:block;
+    color:#2f5cff;
+    font-size:14px;
+    margin-bottom:2px;
+  }
+  .quickbox span{
+    font-size:12px;
+    color:#777;
+  }
+
+  /* category filter pill - light by default, blue when selected */
+  .cat-btn{
+    background:#fff;
+    color:#2f5cff;
+  }
+  .cat-btn.active{
+    background:#2f5cff;
+    color:#fff;
+  }

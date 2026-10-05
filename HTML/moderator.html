@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Owner Review | TipidGo Moderator</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="staff.css">
+  <script src="moderator.js" defer></script>
+</head>
+<body class="staff-page">
+  <header class="staff-header">
+    <a class="staff-brand" href="moderator.html">TipidGo <span>MODERATOR</span></a>
+    <div class="staff-header-actions">
+      <span id="staffName" class="staff-user">Moderator</span>
+      <button id="logoutButton" class="btn" type="button">Log Out</button>
+    </div>
+  </header>
+
+  <div class="staff-shell">
+    <nav class="staff-nav" aria-label="Moderator navigation">
+      <p class="staff-nav-label">Review</p>
+      <button class="active" type="button">Store owner applications <span id="pendingCount"></span></button>
+    </nav>
+
+    <main class="staff-main">
+      <div class="staff-heading">
+        <div>
+          <h1>Store owner approval</h1>
+          <p>Review submitted store details and approve or reject access.</p>
+        </div>
+      </div>
+      <div id="staffMessage" class="staff-message" role="status" aria-live="polite"></div>
+      <section class="staff-panel">
+        <div class="staff-panel-header">
+          <div>
+            <h2>Pending applications</h2>
+            <p id="pendingSummary">Loading applications...</p>
+          </div>
+          <button id="refreshApplications" class="staff-action" type="button">Refresh</button>
+        </div>
+        <div class="staff-table-wrap">
+          <table class="staff-table">
+            <thead><tr><th>Applicant</th><th>Email</th><th>Store</th><th>Location</th><th>Store photo</th><th>Submitted</th><th>Decision</th></tr></thead>
+            <tbody id="applicationRows"><tr><td colspan="7" class="staff-empty">Loading applications...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
