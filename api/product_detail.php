@@ -6,7 +6,6 @@
 // ============================================================
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 require 'db.php';
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;

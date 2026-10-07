@@ -6,7 +6,6 @@
 // ============================================================
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 session_start();
 require 'db.php';
 
@@ -30,11 +29,24 @@ if ($method === 'GET') {
     echo json_encode($feedback);
 
 } elseif ($method === 'POST') {
+
     $data = json_decode(file_get_contents('php://input'), true);
 
+    // Visitors browse as guests (only staff can sign in), so anyone may leave
+    // feedback. A signed-in staff member is shown under their own name.
     $user    = $_SESSION['full_name'] ?? 'Guest';
     $type    = isset($data['type']) ? $data['type'] : 'Comments';
     $message = isset($data['message']) ? trim($data['message']) : '';
+
+    if (!in_array($type, ['Comments', 'Rating', 'Suggestion'], true)) {
+        $type = 'Comments';
+    }
+
+    if (mb_strlen($message) > 1000) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Feedback must be 1000 characters or fewer']);
+        exit;
+    }
 
     if ($message === '') {
         http_response_code(400);

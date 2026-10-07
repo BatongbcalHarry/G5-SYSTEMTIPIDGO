@@ -81,6 +81,10 @@ function showScreen(id){
       renderStoreLocationMap();
     }
 
+    if(id === 'profile' && typeof loadProfile === 'function'){
+      loadProfile();
+    }
+
     const activeScreen = sidebarScreenGroups[id] || id;
     document.querySelectorAll('.sidebar').forEach(sidebar => {
       sidebar.querySelectorAll('.navitem').forEach(item => {
@@ -141,3 +145,119 @@ function showScreen(id){
     const searchInput = screen.querySelector('.search[placeholder^="Search"]');
     applySearch(screen, searchInput ? searchInput.value : '');
   }
+
+/* ============================================================
+   BUDGET - saved in this browser (localStorage), per device.
+   ============================================================ */
+const BUDGET_KEY = 'tipidgo.budget.v1';
+
+function loadBudgetState(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(BUDGET_KEY));
+    if(saved && typeof saved.budget === 'number' && Array.isArray(saved.expenses)) return saved;
+  } catch(err){ /* storage blocked or corrupted: start fresh */ }
+  return { budget: 0, expenses: [] };
+}
+
+function saveBudgetState(state){
+  try{ localStorage.setItem(BUDGET_KEY, JSON.stringify(state)); } catch(err){ /* ignore */ }
+}
+
+function budgetMoney(n){ return n.toLocaleString('en-PH', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+
+function budgetMessage(text, kind){
+  const box = document.getElementById('budgetMessage');
+  box.textContent = text || '';
+  if(kind) box.dataset.kind = kind; else delete box.dataset.kind;
+}
+
+function renderBudget(){
+  const state = loadBudgetState();
+  const spent = state.expenses.reduce((sum, e) => sum + e.amount, 0);
+  const remaining = state.budget - spent;
+
+  document.getElementById('budgetTotal').textContent = budgetMoney(state.budget);
+  document.getElementById('budgetSpent').textContent = budgetMoney(spent);
+  document.getElementById('budgetRemaining').textContent = budgetMoney(remaining);
+
+  const ring = document.getElementById('budgetRing');
+  const ringText = document.getElementById('budgetRingText');
+  ring.classList.remove('warn', 'over');
+  if(state.budget > 0){
+    const pct = Math.min(100, Math.round((spent / state.budget) * 100));
+    ring.style.setProperty('--pct', pct);
+    ringText.textContent = pct + '% used';
+    if(spent > state.budget) ring.classList.add('over');
+    else if(pct >= 80) ring.classList.add('warn');
+  } else {
+    ring.style.setProperty('--pct', 0);
+    ringText.textContent = 'Set a budget';
+  }
+
+  const body = document.getElementById('expenseRows');
+  body.textContent = '';
+  if(state.expenses.length === 0){
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 3;
+    td.textContent = 'No expenses yet. Add what you buy to see how much is left.';
+    tr.appendChild(td);
+    body.appendChild(tr);
+    return;
+  }
+  state.expenses.forEach((expense, index) => {
+    const tr = document.createElement('tr');
+    const name = document.createElement('td');
+    name.textContent = expense.name;
+    const amount = document.createElement('td');
+    amount.textContent = budgetMoney(expense.amount);
+    const action = document.createElement('td');
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'btn';
+    del.textContent = 'Remove';
+    del.addEventListener('click', () => removeExpense(index));
+    action.appendChild(del);
+    tr.append(name, amount, action);
+    body.appendChild(tr);
+  });
+}
+
+function setBudget(){
+  const value = parseFloat(document.getElementById('budgetInput').value);
+  if(!isFinite(value) || value <= 0){
+    budgetMessage('Enter a budget greater than 0.', 'error');
+    return;
+  }
+  const state = loadBudgetState();
+  state.budget = Math.round(value * 100) / 100;
+  saveBudgetState(state);
+  document.getElementById('budgetInput').value = '';
+  budgetMessage('Budget saved.');
+  renderBudget();
+}
+
+function addExpense(){
+  const name = document.getElementById('expenseName').value.trim();
+  const amount = parseFloat(document.getElementById('expenseAmount').value);
+  if(!name || !isFinite(amount) || amount <= 0){
+    budgetMessage('Enter what you bought and an amount greater than 0.', 'error');
+    return;
+  }
+  const state = loadBudgetState();
+  state.expenses.push({ name, amount: Math.round(amount * 100) / 100 });
+  saveBudgetState(state);
+  document.getElementById('expenseName').value = '';
+  document.getElementById('expenseAmount').value = '';
+  budgetMessage(state.budget > 0 ? '' : 'Expense added. Set a budget to see how much is left.');
+  renderBudget();
+}
+
+function removeExpense(index){
+  const state = loadBudgetState();
+  state.expenses.splice(index, 1);
+  saveBudgetState(state);
+  renderBudget();
+}
+
+document.addEventListener('DOMContentLoaded', renderBudget);

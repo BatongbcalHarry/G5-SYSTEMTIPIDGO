@@ -6,7 +6,6 @@
 // ============================================================
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 require 'db.php';
 
 $category = isset($_GET['category']) ? $_GET['category'] : 'all';

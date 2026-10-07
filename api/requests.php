@@ -6,7 +6,6 @@
 // ============================================================
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 require 'db.php';
 
 $method = $_SERVER['REQUEST_METHOD'];

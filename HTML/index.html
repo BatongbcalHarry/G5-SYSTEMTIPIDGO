@@ -304,20 +304,38 @@
         <div class="user">👤 user</div>
       </div>
       <div class="content">
-        <div class="placeholder" style="padding:14px;margin-bottom:14px;">
-          <div style="font-weight:bold;">💰 Set Your Budget</div>
-          <input class="search" placeholder="Enter amount" style="margin-top:6px;">
-          <button class="btn" style="margin-left:6px;">Set</button>
+        <div class="budget-card">
+          <label for="budgetInput" class="budget-title">Set your budget</label>
+          <div class="budget-row">
+            <input id="budgetInput" class="search" type="number" min="0" step="0.01" placeholder="Amount in PHP">
+            <button type="button" class="btn" onclick="setBudget()">Save budget</button>
+          </div>
+          <div id="budgetMessage" class="budget-message" role="status"></div>
         </div>
-        <div style="font-weight:bold;margin-bottom:8px;">Spending Overview</div>
-        <div style="display:flex;align-items:center;gap:20px;">
-          <div class="placeholder" style="width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;text-align:center;">
-            500<br>Total Budget
+
+        <div class="budget-card">
+          <div class="budget-title">Spending overview</div>
+          <div class="budget-overview">
+            <div id="budgetRing" class="budget-ring"><span id="budgetRingText">Set a budget</span></div>
+            <div class="budget-figures">
+              <div>Budget: <b id="budgetTotal">0.00</b></div>
+              <div>Spent: <b id="budgetSpent">0.00</b></div>
+              <div>Remaining: <b id="budgetRemaining">0.00</b></div>
+            </div>
           </div>
-          <div style="font-size:13px;">
-            Spent: 320<br>
-            Remaining: 180
+        </div>
+
+        <div class="budget-card">
+          <div class="budget-title">Add an expense</div>
+          <div class="budget-row">
+            <input id="expenseName" class="search" type="text" maxlength="60" placeholder="What did you buy?">
+            <input id="expenseAmount" class="search" type="number" min="0" step="0.01" placeholder="Amount">
+            <button type="button" class="btn" onclick="addExpense()">Add expense</button>
           </div>
+          <table class="budget-table">
+            <thead><tr><th>Item</th><th>Amount</th><th></th></tr></thead>
+            <tbody id="expenseRows"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -735,16 +753,14 @@
         <div class="user">👤 user</div>
       </div>
       <div class="content">
-        <div style="display:flex;gap:20px;">
-          <div>
-            <div class="placeholder" style="width:80px;height:80px;border-radius:50%;"></div>
-            <div style="text-align:center;font-size:13px;margin-top:4px;"><b>Jose Cruz</b><br>jose@gmail.com</div>
-            <button class="btn" style="margin-top:8px;" onclick="showScreen('editProfile')">Edit profile</button>
-          </div>
-          <div style="font-size:13px;">
-            <div style="font-weight:bold;">Contact Information</div>
-            Email<br><br>
-            Phone number
+        <div class="budget-card profile-card">
+          <div class="profile-avatar" id="profileAvatar" aria-hidden="true">?</div>
+          <div class="profile-details">
+            <div class="budget-title" id="profileName">Not signed in</div>
+            <div id="profileEmail" class="profile-line"></div>
+            <div id="profileRole" class="profile-line"></div>
+            <div id="profileJoined" class="profile-line"></div>
+            <button type="button" class="btn" style="margin-top:12px;" onclick="openEditProfile()">Edit profile</button>
           </div>
         </div>
       </div>
@@ -776,21 +792,33 @@
         <div class="user">👤 user</div>
       </div>
       <div class="content">
-        <div style="font-weight:bold;margin-bottom:8px;">Edit Profile</div>
-        <div style="display:flex;gap:20px;">
-          <div style="text-align:center;">
-            <div class="placeholder" style="width:80px;height:80px;border-radius:50%;"></div>
-            <div style="font-size:12px;">Change photo</div>
-          </div>
-          <div style="font-size:13px;width:100%;">
-            Name<br>
-            <input class="search" style="width:100%;margin-bottom:8px;"><br>
-            Email<br>
-            <input class="search" style="width:100%;margin-bottom:8px;"><br>
-            New Password<br>
-            <input class="search" style="width:100%;margin-bottom:8px;" type="password"><br>
-            <button class="btn">Save change</button>
-            <button class="btn">Cancel</button>
+        <div class="budget-card">
+          <div class="budget-title">Edit profile</div>
+          <div class="auth-form" style="max-width:420px;">
+            <div class="auth-field">
+              <label for="editName">Name</label>
+              <input id="editName" class="search" type="text" maxlength="100">
+            </div>
+            <div class="auth-field">
+              <label for="editEmail">Email</label>
+              <input id="editEmail" class="search" type="email" disabled>
+              <small>Your email is your sign-in name and cannot be changed here.</small>
+            </div>
+            <div class="auth-field">
+              <label for="editCurrentPassword">Current password</label>
+              <input id="editCurrentPassword" class="search" type="password" autocomplete="current-password">
+              <small>Only needed if you are setting a new password.</small>
+            </div>
+            <div class="auth-field">
+              <label for="editNewPassword">New password</label>
+              <input id="editNewPassword" class="search" type="password" autocomplete="new-password">
+              <small>At least 8 characters with 1 special character. Leave blank to keep your current one.</small>
+            </div>
+            <div id="editProfileMessage" class="budget-message" role="status"></div>
+            <div class="budget-row">
+              <button type="button" class="btn" onclick="saveProfile()">Save changes</button>
+              <button type="button" class="btn cat-btn" onclick="showScreen('profile')">Cancel</button>
+            </div>
           </div>
         </div>
       </div>
@@ -822,20 +850,21 @@
         <div class="user">👤 user</div>
       </div>
       <div class="content">
-        <div style="font-weight:bold;margin-bottom:10px;">Settings</div>
-        <div style="font-size:13px;">
-          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ccc;">
-            <span>👤 Profile</span><span>></span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ccc;">
-            <span>🔔 Notification</span><span>></span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ccc;">
-            <span>🔒 Privacy</span><span>></span>
-          </div>
-          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #ccc;">
-            <span>🛡️ Help & Security</span><span>></span>
-          </div>
+        <div class="budget-card">
+          <div class="budget-title">Settings</div>
+          <button type="button" class="settings-row" onclick="openEditProfile()">
+            <span>Edit your name or password</span><span aria-hidden="true">&rsaquo;</span>
+          </button>
+          <button type="button" class="settings-row" onclick="showScreen('budget')">
+            <span>Open your budget</span><span aria-hidden="true">&rsaquo;</span>
+          </button>
+          <button type="button" class="settings-row" onclick="clearBudgetData()">
+            <span>Clear budget and expenses saved on this device</span><span aria-hidden="true">&rsaquo;</span>
+          </button>
+          <button type="button" class="settings-row" onclick="logout()">
+            <span>Sign out</span><span aria-hidden="true">&rsaquo;</span>
+          </button>
+          <div id="settingsMessage" class="budget-message" role="status"></div>
         </div>
       </div>
     </div>

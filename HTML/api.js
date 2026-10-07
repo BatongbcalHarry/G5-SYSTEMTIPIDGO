@@ -5,6 +5,20 @@
 // read and write the real MySQL database.
 // ============================================================
 
+// Escapes text before it is placed into innerHTML, so anything a user typed
+// (feedback, requests, store names...) is shown as text and never run as HTML.
+function esc(value){
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[ch]));
+}
+
+// Shown when a product has no picture or its picture file is missing.
+const PRODUCT_FALLBACK_IMAGE = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80"><rect width="120" height="80" fill="#E9EFFD"/>' +
+  '<path d="M38 36h44l-5 24H43z" fill="#2451C4"/><path d="M48 36a12 12 0 0 1 24 0" fill="none" stroke="#2451C4" stroke-width="4"/>' +
+  '<circle cx="60" cy="48" r="4" fill="#E3A116"/></svg>');
+
 const API_BASE = /\/HTML(?:\/|$)/i.test(window.location.pathname) ? '../api' : 'api';
 
 const productImageFallbacks = {
@@ -167,8 +181,8 @@ function renderStoreLocationMap(){
       .bindPopup(`<strong>Your location</strong><br>Accuracy: &plusmn;${Math.round(accuracy)} m`);
     userAccuracyCircle = L.circle([lat, lng], {
       radius: accuracy,
-      color: '#2f5cff',
-      fillColor: '#2f5cff',
+      color: '#2451C4',
+      fillColor: '#2451C4',
       fillOpacity: 0.15,
       weight: 2
     }).addTo(storeMap);
@@ -538,14 +552,14 @@ async function loadProducts(){
 
       const imgSrc = resolveImagePath(p.image, p.name);
       card.innerHTML = `
-        <img src="${imgSrc}" alt="${p.name}" style="width:100%;height:70px;object-fit:contain;background:#e6e9f0;border-radius:6px;">
-        <div style="font-size:13px;margin-top:4px;">${p.name}<br>${p.lowestPrice.toFixed(2)}</div>
+        <img src="${esc(imgSrc)}" alt="${esc(p.name)}" onerror="this.onerror=null;this.src=PRODUCT_FALLBACK_IMAGE;" style="width:100%;height:70px;object-fit:contain;background:var(--brand-light);border-radius:6px;">
+        <div style="font-size:13px;margin-top:4px;">${esc(p.name)}<br>${p.lowestPrice.toFixed(2)}</div>
         <button class="btn" style="width:100%;margin-top:4px;" onclick="viewProduct(${p.id})">VIEW PRODUCTS</button>
       `;
       grid.appendChild(card);
     });
   } catch(err){
-    grid.innerHTML = '<div style="color:red;font-size:13px;">Could not load products. Check that XAMPP (Apache + MySQL) is running and the database is imported.</div>';
+    grid.innerHTML = '<div style="color:var(--danger);font-size:13px;">Could not load products. Check that XAMPP (Apache + MySQL) is running and the database is imported.</div>';
     console.error(err);
   }
 }
@@ -561,6 +575,7 @@ async function viewProduct(id){
     document.getElementById('detailName').textContent = data.product.name;
     document.getElementById('detailImage').src = resolveImagePath(data.product.image, data.product.name);
     document.getElementById('detailImage').alt = data.product.name;
+    document.getElementById('detailImage').onerror = function(){ this.onerror = null; this.src = PRODUCT_FALLBACK_IMAGE; };
 
     const lowest = data.prices[0];
     document.getElementById('detailPrice').textContent = lowest ? lowest.price.toFixed(2) : 'No Price Available';
@@ -574,9 +589,9 @@ async function viewProduct(id){
         const tr = document.createElement('tr');
         const lowestTag = index === 0 ? ' ✅ Lowest' : '';
         tr.innerHTML = `
-          <td>${pr.storeName}${pr.verified ? ' ✔' : ''}</td>
+          <td>${esc(pr.storeName)}${pr.verified ? ' ✔' : ''}</td>
           <td>${pr.price.toFixed(2)}${lowestTag}</td>
-          <td>${pr.lastUpdated}</td>
+          <td>${esc(pr.lastUpdated)}</td>
         `;
         rows.appendChild(tr);
       });
@@ -584,7 +599,7 @@ async function viewProduct(id){
 
     const historyBox = document.getElementById('detailHistory');
     if(data.history && data.history.length){
-      historyBox.innerHTML = 'Price history: ' + data.history.map(h => `${h.date} - ₱${h.price.toFixed(2)}`).join(' → ');
+      historyBox.innerHTML = 'Price history: ' + data.history.map(h => `${esc(h.date)} - ₱${h.price.toFixed(2)}`).join(' → ');
     } else {
       historyBox.textContent = 'No price history yet';
     }
@@ -625,8 +640,8 @@ function renderStoreList(stores){
     row.distance = distance;
     const location = getStoreAddress(store);
     row.innerHTML = `
-      <span>📍 ${store.name}${store.verified ? ' ✔' : ''} - ${location}</span>
-      <span style="color:#4b5563;white-space:nowrap;">${label}</span>
+      <span>📍 ${esc(store.name)}${store.verified ? ' ✔' : ''} - ${esc(location)}</span>
+      <span style="color:var(--muted);white-space:nowrap;">${label}</span>
     `;
     return row;
   }).filter(Boolean);
@@ -640,7 +655,7 @@ function renderStoreList(stores){
 
   list.innerHTML = '';
   if(rows.length === 0){
-    list.innerHTML = '<span style="color:#4b5563;">No stores within the current radius. Try a bigger radius or allow location access.</span>';
+    list.innerHTML = '<span style="color:var(--muted);">No stores within the current radius. Try a bigger radius or allow location access.</span>';
     return;
   }
 
@@ -658,7 +673,7 @@ async function loadStores(){
     renderStoreList(stores);
     renderStoreLocationMap();
   } catch(err){
-    list.innerHTML = '<span style="color:red;">Could not load stores.</span>';
+    list.innerHTML = '<span style="color:var(--danger);">Could not load stores.</span>';
     console.error(err);
   }
 }
@@ -681,15 +696,15 @@ async function loadFeedback(){
       row.style.borderBottom = '1px solid #eee';
       row.innerHTML = `
         <div style="display:flex;justify-content:space-between;">
-          <span>👤 ${f.user} <span style="color:#888;">(${f.type})</span></span>
-          <span>${f.date}</span>
+          <span>👤 ${esc(f.user)} <span style="color:var(--muted);">(${esc(f.type)})</span></span>
+          <span>${esc(f.date)}</span>
         </div>
-        <div style="color:#555;margin-top:2px;">${f.message}</div>
+        <div style="color:var(--ink);margin-top:2px;">${esc(f.message)}</div>
       `;
       list.appendChild(row);
     });
   } catch(err){
-    list.innerHTML = '<div style="color:red;">Could not load feedback.</div>';
+    list.innerHTML = '<div style="color:var(--danger);">Could not load feedback.</div>';
     console.error(err);
   }
 }
@@ -780,7 +795,7 @@ async function loadRequests(){
     const requests = await res.json();
 
     if(requests.length === 0){
-      list.innerHTML = '<span style="color:#888;">No requests submitted yet.</span>';
+      list.innerHTML = '<span style="color:var(--muted);">No requests submitted yet.</span>';
       return;
     }
 
@@ -791,14 +806,14 @@ async function loadRequests(){
       row.style.borderBottom = '1px solid #eee';
       row.innerHTML = `
         <div style="display:flex;justify-content:space-between;">
-          <span><b>${r.type}</b> - ${r.details}</span>
-          <span style="color:#888;">${r.status}</span>
+          <span><b>${esc(r.type)}</b> - ${esc(r.details)}</span>
+          <span style="color:var(--muted);">${esc(r.status)}</span>
         </div>
       `;
       list.appendChild(row);
     });
   } catch(err){
-    list.innerHTML = '<span style="color:red;">Could not load requests.</span>';
+    list.innerHTML = '<span style="color:var(--danger);">Could not load requests.</span>';
     console.error(err);
   }
 }
@@ -809,3 +824,89 @@ async function loadRequests(){
 document.addEventListener('DOMContentLoaded', () => {
   checkSession();
 });
+
+// ------------------------------------------------------------
+// PROFILE & SETTINGS (signed-in staff)
+// ------------------------------------------------------------
+function setProfileMessage(id, text, kind){
+  const box = document.getElementById(id);
+  if(!box) return;
+  box.textContent = text || '';
+  if(kind) box.dataset.kind = kind; else delete box.dataset.kind;
+}
+
+async function loadProfile(){
+  if(!currentUser){
+    showScreen('home');
+    return;
+  }
+  try{
+    const res = await fetch(`${API_BASE}/profile.php`);
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Could not load your profile.');
+
+    document.getElementById('profileName').textContent = data.full_name;
+    document.getElementById('profileEmail').textContent = data.email;
+    document.getElementById('profileRole').textContent = 'Role: ' + String(data.role).replace('_', ' ');
+    document.getElementById('profileJoined').textContent = data.joined ? 'Member since ' + data.joined : '';
+    document.getElementById('profileAvatar').textContent = (data.full_name || '?').trim().charAt(0).toUpperCase();
+    document.getElementById('editName').value = data.full_name;
+    document.getElementById('editEmail').value = data.email;
+  } catch(err){
+    document.getElementById('profileName').textContent = 'Could not load your profile';
+    console.error(err);
+  }
+}
+
+function openEditProfile(){
+  showScreen('editProfile');
+  setProfileMessage('editProfileMessage', '');
+  document.getElementById('editCurrentPassword').value = '';
+  document.getElementById('editNewPassword').value = '';
+  loadProfile();
+}
+
+async function saveProfile(){
+  const full_name = document.getElementById('editName').value.trim();
+  const current_password = document.getElementById('editCurrentPassword').value;
+  const new_password = document.getElementById('editNewPassword').value;
+
+  if(!full_name){
+    setProfileMessage('editProfileMessage', 'Enter your name.', 'error');
+    return;
+  }
+  if(new_password && !current_password){
+    setProfileMessage('editProfileMessage', 'Enter your current password to set a new one.', 'error');
+    return;
+  }
+
+  try{
+    const res = await fetch(`${API_BASE}/profile.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ full_name, current_password, new_password })
+    });
+    const data = await res.json();
+    if(!res.ok){
+      setProfileMessage('editProfileMessage', data.error || 'Could not save your changes.', 'error');
+      return;
+    }
+
+    currentUser.full_name = data.full_name;
+    updateAccountBadge();
+    document.getElementById('editCurrentPassword').value = '';
+    document.getElementById('editNewPassword').value = '';
+    setProfileMessage('editProfileMessage', data.passwordChanged ? 'Saved. Your password was changed.' : 'Saved.');
+    loadProfile();
+  } catch(err){
+    setProfileMessage('editProfileMessage', 'Could not reach the server. Check that Apache and MySQL are running.', 'error');
+    console.error(err);
+  }
+}
+
+function clearBudgetData(){
+  if(!confirm('Remove the budget and all expenses saved on this device?')) return;
+  try{ localStorage.removeItem('tipidgo.budget.v1'); } catch(err){ /* ignore */ }
+  if(typeof renderBudget === 'function') renderBudget();
+  setProfileMessage('settingsMessage', 'Budget data cleared.');
+}

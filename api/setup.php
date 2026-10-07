@@ -1,10 +1,24 @@
 <?php
 // ============================================================
 // ONE-TIME SETUP: open this file once in your browser
-// (http://localhost/tipidgo/api/setup.php) to create staff
-// accounts. Safe to run more than once - it skips
-// accounts that already exist.
+// (http://localhost/tipidgo/api/setup.php?key=YOUR_SETUP_KEY)
+// to create staff accounts. Safe to run more than once - it
+// skips accounts that already exist.
+//
+// SECURITY: this only runs with the correct ?key= value below.
+// Change SETUP_KEY to your own secret before using this, and
+// consider deleting this file entirely once your accounts are
+// created - it should not stay reachable on a public/live site.
 // ============================================================
+
+define('SETUP_KEY', 'change-this-before-running');
+
+$providedKey = $_GET['key'] ?? '';
+if (!hash_equals(SETUP_KEY, $providedKey)) {
+    http_response_code(403);
+    header('Content-Type: application/json');
+    die(json_encode(['error' => 'Missing or incorrect setup key']));
+}
 
 header('Content-Type: application/json');
 require 'db.php';
