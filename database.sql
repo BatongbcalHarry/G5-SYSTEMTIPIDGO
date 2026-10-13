@@ -37,8 +37,9 @@ CREATE TABLE IF NOT EXISTS stores (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     location VARCHAR(200) NULL,
-    verified TINYINT(1) NOT NULL DEFAULT 0
-);
+    verified TINYINT(1) NOT NULL DEFAULT 0,
+    UNIQUE KEY uq_store_name_location (name, location)
+) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
 -- products: the basic goods being price-compared
@@ -48,8 +49,10 @@ CREATE TABLE IF NOT EXISTS products (
     name VARCHAR(150) NOT NULL,
     category VARCHAR(50) NOT NULL,
     base_price DECIMAL(10,2) NOT NULL DEFAULT 0,
-    image VARCHAR(255) NULL
-);
+    image VARCHAR(255) NULL,
+    UNIQUE KEY uq_product_name (name),
+    CONSTRAINT chk_base_price CHECK (base_price >= 0)
+) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
 -- prices: current price of a product at a specific store
@@ -60,9 +63,11 @@ CREATE TABLE IF NOT EXISTS prices (
     store_id INT NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     last_updated DATE NOT NULL,
+    UNIQUE KEY uq_price_product_store (product_id, store_id),   -- one price per store and product
+    CONSTRAINT chk_price_positive CHECK (price > 0),
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
 -- price_history: a log of price changes over time, per product+store
@@ -73,9 +78,10 @@ CREATE TABLE IF NOT EXISTS price_history (
     store_id INT NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     recorded_date DATE NOT NULL,
+    INDEX idx_history_lookup (product_id, store_id, recorded_date),
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB;
 
 -- ------------------------------------------------------------
 -- feedback: user-submitted comments/suggestions/complaints
@@ -136,6 +142,15 @@ CREATE TABLE IF NOT EXISTS login_attempts (
 );
 
 -- ------------------------------------------------------------
+-- settings: admin-controlled switches (owner applications open/closed,
+-- site announcement). settings.php also creates it automatically.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS settings (
+    name VARCHAR(50) PRIMARY KEY,
+    value VARCHAR(500) NOT NULL DEFAULT ''
+);
+
+-- ------------------------------------------------------------
 -- Sample data so the site isn't empty on first run.
 -- Replace/add to this with your own real products and stores.
 -- ------------------------------------------------------------
@@ -145,22 +160,34 @@ INSERT INTO stores (name, location, verified) VALUES
     ('Robinson', 'Cabanatuan City', 0),
     ('TipidGo Demo Store', 'Cabanatuan City', 0);
 
--- image is left NULL here because this repo doesn't currently
--- include an images/ folder. Add your own images under
--- HTML/images/ and update each row's image column to match
--- (e.g. 'images/rice.svg'), or leave it NULL to show no picture.
+-- image points to a file inside HTML/images/ (the demo pictures are included).
+-- Use your own photos by replacing the files or editing the image column.
 INSERT INTO products (name, category, base_price, image) VALUES
-    ('Rice (1kg)', 'staples', 55.00, NULL),
-    ('Eggs (tray of 30)', 'staples', 210.00, NULL),
-    ('Cooking Oil (1L)', 'staples', 95.00, NULL),
-    ('Dishwashing Soap', 'hygiene', 15.00, NULL),
-    ('Laundry Detergent (1kg)', 'hygiene', 85.00, NULL);
+    ('Rice (1kg)', 'grains', 55.00, 'images/rice.svg'),
+    ('Corn Grits (1kg)', 'grains', 40.00, 'images/corn-grits.svg'),
+    ('Eggs (tray of 30)', 'dairy', 210.00, 'images/eggs.svg'),
+    ('Fresh Milk (1L)', 'dairy', 95.00, 'images/milk.svg'),
+    ('Cooking Oil (1L)', 'cooking', 95.00, 'images/cooking-oil.svg'),
+    ('Vinegar (1L)', 'cooking', 28.00, 'images/vinegar.svg'),
+    ('Sardines (155g)', 'canned', 24.00, 'images/sardines.svg'),
+    ('Corned Beef (150g)', 'canned', 48.00, 'images/corned-beef.svg'),
+    ('Dishwashing Soap', 'hygiene', 15.00, 'images/dishwashing-soap.svg'),
+    ('Laundry Detergent (1kg)', 'hygiene', 85.00, 'images/laundry-detergent.svg'),
+    ('Bath Soap', 'hygiene', 22.00, 'images/bath-soap.svg'),
+    ('Shampoo (180ml)', 'hygiene', 65.00, 'images/shampoo.svg'),
+    ('Toothpaste (100g)', 'hygiene', 45.00, 'images/toothpaste.svg');
 
 INSERT INTO prices (product_id, store_id, price, last_updated) VALUES
-    (1, 1, 54.00, CURDATE()),
-    (1, 2, 56.50, CURDATE()),
-    (2, 1, 205.00, CURDATE()),
-    (2, 3, 215.00, CURDATE()),
-    (3, 1, 92.00, CURDATE()),
-    (4, 2, 14.50, CURDATE()),
-    (5, 1, 83.00, CURDATE());
+    (1, 1, 54.00, CURDATE()), (1, 2, 56.50, CURDATE()),
+    (2, 1, 38.00, CURDATE()), (2, 3, 42.00, CURDATE()),
+    (3, 1, 205.00, CURDATE()), (3, 3, 215.00, CURDATE()),
+    (4, 2, 92.00, CURDATE()), (4, 1, 99.00, CURDATE()),
+    (5, 1, 92.00, CURDATE()), (5, 2, 97.50, CURDATE()),
+    (6, 2, 26.00, CURDATE()), (6, 3, 30.00, CURDATE()),
+    (7, 1, 22.50, CURDATE()), (7, 2, 25.00, CURDATE()),
+    (8, 2, 46.00, CURDATE()), (8, 3, 51.00, CURDATE()),
+    (9, 2, 14.50, CURDATE()), (9, 1, 16.00, CURDATE()),
+    (10, 1, 83.00, CURDATE()), (10, 3, 88.00, CURDATE()),
+    (11, 1, 20.00, CURDATE()), (11, 2, 23.50, CURDATE()),
+    (12, 2, 62.00, CURDATE()), (12, 3, 68.00, CURDATE()),
+    (13, 1, 43.00, CURDATE()), (13, 2, 47.00, CURDATE());

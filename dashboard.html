@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%232451C4%27/%3E%3Cpath d=%27M20 28h24l-3 16H23z%27 fill=%27%23fff%27/%3E%3Ccircle cx=%2732%27 cy=%2736%27 r=%273%27 fill=%27%23E3A116%27/%3E%3C/svg%3E">
+  <title>Dashboard | TipidGo</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="staff.css">
+  <script src="dashboard.js" defer></script>
+</head>
+<body class="staff-page">
+  <header class="staff-header">
+    <a class="staff-brand" href="dashboard.html">TipidGo <span id="roleTag">DASHBOARD</span></a>
+    <div class="staff-header-actions">
+      <span id="staffName" class="staff-user"></span>
+      <button id="logoutButton" class="btn" type="button">Log Out</button>
+    </div>
+  </header>
+  <div class="staff-shell">
+    <nav class="staff-nav" id="staffNav" aria-label="Dashboard navigation"></nav>
+    <main class="staff-main">
+      <div id="staffMessage" class="staff-message" role="status" aria-live="polite"></div>
+      <div id="view"></div>
+    </main>
+  </div>
+</body>
+</html>

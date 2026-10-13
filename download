@@ -1,0 +1,15 @@
+# Optional speed-ups for Apache (XAMPP). Ignored if the modules are not enabled.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/svg+xml "access plus 1 day"
+  ExpiresByType image/png "access plus 1 day"
+</IfModule>
+<IfModule mod_headers.c>
+  # never cache API answers: prices must always be fresh
+  <FilesMatch "\.php$">
+    Header set Cache-Control "no-store"
+  </FilesMatch>
+</IfModule>

@@ -1,36 +1,486 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=./HTML/">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TipidGo</title>
-  <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      font-family: Arial, sans-serif;
-      background: #f4f7fb;
-      color: #17324d;
-    }
-    .message {
-      text-align: center;
-      padding: 24px;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
-    }
-    a {
-      color: #0f6fff;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%232451C4%27/%3E%3Cpath d=%27M20 28h24l-3 16H23z%27 fill=%27%23fff%27/%3E%3Ccircle cx=%2732%27 cy=%2736%27 r=%273%27 fill=%27%23E3A116%27/%3E%3C/svg%3E">
+  <title>TipidGo | Compare and Save</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
-  <div class="message">
-    <h2>Redirecting to TipidGo...</h2>
-    <p>If you are not redirected automatically, <a href="./HTML/">click here</a>.</p>
+<div id="accountBadge" class="user account-badge">
+  👤 <span id="accountName">Browsing as guest</span>
+  <button id="ownerLoginButton" class="owner-login-trigger" type="button" onclick="showOwnerLogin()">Staff sign in</button>
+  <a id="accountLogout" style="display:none;margin-left:10px;cursor:pointer;color:var(--brand);" onclick="logout()">Logout</a>
+</div>
+
+<!-- ============================================================
+     SCREEN: LOGIN (shown first - gates the rest of the app)
+============================================================ -->
+<div id="login" class="screen">
+  <div class="auth-card">
+    <div class="brand" style="margin-bottom:4px;">TipidGo</div>
+    <p style="color:#777;font-size:13px;margin-top:0;margin-bottom:18px;">Compare Prices - Save More</p>
+
+    <!-- LOG IN FORM -->
+    <div id="loginForm">
+      <h3 style="margin:0 0 6px 0;">Staff Sign In</h3>
+      <p class="auth-intro">For store owners, moderators, and administrators.</p>
+      <div id="ownerRegistrationNotice" class="auth-notice" role="status" style="display:none;"></div>
+      <input id="loginEmail" class="search" style="width:100%;margin-bottom:8px;" type="email" placeholder="Email">
+      <input id="loginPassword" class="search" style="width:100%;margin-bottom:8px;" type="password" placeholder="Password">
+      <div id="loginError" style="color:#d33;font-size:12px;margin-bottom:8px;"></div>
+      <button class="btn" style="width:100%;" onclick="login()">Sign In</button>
+      <div class="auth-login-options">
+        <div class="auth-owner-signup">
+          <p>New store owner?</p>
+          <button type="button" onclick="showOwnerSignup()">Apply for a store-owner account <span aria-hidden="true">→</span></button>
+        </div>
+        <p class="auth-guest-option">Just browsing? <button type="button" class="auth-switch-link" onclick="showGuestHome()">Continue as guest</button></p>
+      </div>
+    </div>
+    <div id="ownerRegisterForm" style="display:none;">
+      <h3 style="margin:0 0 6px 0;">Create a store-owner account</h3>
+      <p class="auth-intro">Register to sign in as a store owner.</p>
+      <form class="auth-form" onsubmit="event.preventDefault(); registerStoreOwner();">
+        <div class="auth-field">
+          <label for="ownerName">Full name</label>
+          <input id="ownerName" class="search" type="text" autocomplete="name" placeholder="Your full name" required>
+        </div>
+        <div class="auth-field">
+          <label for="ownerStoreName">Store name</label>
+          <input id="ownerStoreName" class="search" type="text" autocomplete="organization" placeholder="Your store's registered name" required>
+        </div>
+        <div class="auth-field">
+          <label for="ownerStoreLocation">Store location</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="ownerStoreLocation" class="search" type="text" autocomplete="street-address" placeholder="Full address or current location" required style="flex:1;">
+            <button type="button" id="detectLocationButton" class="btn" onclick="detectCurrentLocation('ownerStoreLocation')">Use my location</button>
+          </div>
+          <small id="locationStatus" style="display:block;color:#5b6b7d;margin-top:6px;">Use your current location or enter your store's full address.</small>
+        </div>
+        <div class="auth-field">
+          <label for="ownerStorePhoto">Photo of your store <span aria-hidden="true">*</span></label>
+          <input id="ownerStorePhoto" class="search" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" required>
+          <small>Take a clear photo showing your store and its signage. JPEG, PNG, or WebP; max 5 MB. Staff will use it to verify your application.</small>
+        </div>
+        <div class="auth-field">
+          <label for="ownerEmail">Email address</label>
+          <input id="ownerEmail" class="search" type="email" autocomplete="email" placeholder="you@example.com" required>
+        </div>
+        <div class="auth-field">
+          <label for="ownerPassword">Password</label>
+          <input id="ownerPassword" class="search" type="password" autocomplete="new-password" minlength="8" pattern="(?=.*[^A-Za-z0-9]).{8,}" title="Use at least 8 characters and include 1 special character." placeholder="At least 8 characters + 1 special" required>
+        </div>
+        <div class="auth-field">
+          <label for="ownerPasswordConfirm">Confirm password</label>
+          <input id="ownerPasswordConfirm" class="search" type="password" autocomplete="new-password" minlength="8" pattern="(?=.*[^A-Za-z0-9]).{8,}" title="Use at least 8 characters and include 1 special character." placeholder="Enter your password again" required>
+        </div>
+        <div id="ownerRegisterError" class="auth-error" role="alert" aria-live="polite"></div>
+        <button id="ownerRegisterSubmit" class="btn auth-submit" type="submit">Create owner account</button>
+      </form>
+      <p class="auth-switch">Already registered? <button type="button" class="auth-switch-link" onclick="showOwnerLogin()">Sign in</button></p>
+    </div>
   </div>
+</div>
+
+<!-- SCREEN: HOME  -->
+<div id="home" class="screen active">
+  <div class="app">
+    <div class="sidebar"></div><!-- filled in by script.js (one shared menu) -->
+    <div class="main">
+      <div class="topbar">
+        <div class="user">👤 user</div>
+      </div>
+      <div class="content">
+        <div class="welcome-box">
+          <h2>Welcome to TipidGo!</h2>
+          <p>Compare everyday prices and explore nearby stores without creating an account.</p>
+        </div>
+        <div class="quickgrid">
+          <button type="button" class="quickbox" onclick="showScreen('product')">
+            <span class="icon">📦</span>
+            <b>Compare Prices</b>
+            <span>Check prices from different stores</span>
+          </button>
+          <button type="button" class="quickbox" onclick="showScreen('stores')">
+            <span class="icon">📍</span>
+            <b>Nearby Stores</b>
+            <span>Find stores near you</span>
+          </button>
+          <button type="button" class="quickbox" onclick="showScreen('budget')">
+            <span class="icon">💰</span>
+            <b>Budget Tracker</b>
+            <span>Manage your budget</span>
+          </button>
+          <button type="button" class="quickbox" onclick="showScreen('feedback')">
+            <span class="icon">🔔</span>
+            <b>Latest Updates</b>
+            <span>See recent price changes</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--Product list with search/filter -->
+<div id="product" class="screen">
+  <div class="app">
+    <div class="sidebar"></div><!-- filled in by script.js (one shared menu) -->
+    <div class="main">
+      <div class="topbar">
+        <div class="user">👤 user</div>
+      </div>
+      <div class="content">
+        <!-- search product bar -->
+        <input class="search" style="width:100%;margin-bottom:10px;" placeholder="Search Product">
+
+        <!-- category filter pills (clickable - filters the grid below) -->
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <button type="button" class="btn cat-btn active" onclick="filterCategory('all', this)">All</button>
+          <button type="button" class="btn cat-btn" onclick="filterCategory('grains', this)">Grains</button>
+          <button type="button" class="btn cat-btn" onclick="filterCategory('dairy', this)">Dairy & Eggs</button>
+          <button type="button" class="btn cat-btn" onclick="filterCategory('cooking', this)">Cooking Essentials</button>
+          <button type="button" class="btn cat-btn" onclick="filterCategory('hygiene', this)">Hygiene & Cleaning</button>
+          <button type="button" class="btn cat-btn" onclick="filterCategory('canned', this)">Canned Goods</button>
+        </div>
+
+        <!-- product grid: filled in live by api.js from the MySQL database (api/products.php) -->
+        <div id="productGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+          <div style="font-size:13px;color:#888;">Loading products...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--  PRODUCT DETAIL Rice (1kg) price comparison table -->
+<div id="productDetail" class="screen">
+  <div class="app">
+    <div class="sidebar"></div><!-- filled in by script.js (one shared menu) -->
+    <div class="main">
+      <div class="topbar">
+        <input class="search" placeholder="Search">
+        <div class="user">👤 user</div>
+      </div>
+      <div class="content">
+        <div style="display:flex;gap:14px;margin-bottom:14px;">
+          <img id="detailImage" src="" alt="" style="width:110px;height:110px;object-fit:contain;background:#e6e9f0;border-radius:6px;">
+          <div>
+            <div id="detailName" style="font-weight:bold;">Loading...</div>
+            <div id="detailPrice"></div>
+          </div>
+        </div>
+        <table>
+          <tr>
+            <th>STORE</th>
+            <th>PRICE</th>
+            <th>Last Update</th>
+          </tr>
+          <tbody id="detailPriceRows">
+            <tr><td colspan="3">Loading...</td></tr>
+          </tbody>
+        </table>
+        <div id="detailHistory" class="placeholder" style="margin-top:10px;padding:8px;font-size:13px;">Price history</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--STORES- Nearby Store + Store list + radius-->
+<div id="stores" class="screen">
+  <div class="app">
+    <div class="sidebar"></div><!-- filled in by script.js (one shared menu) -->
+    <div class="main">
+      <div class="topbar">
+        <input class="search" placeholder="Search">
+        <div class="user">👤 user</div>
+      </div>
+      <div class="content">
+        <div style="font-weight:bold;margin-bottom:8px;">Nearby Store</div>
+        <div class="store-map-layout">
+          <div class="store-map-panel">
+            <div id="storeMap" role="application" aria-label="Map of your location and nearby stores"></div>
+            <div id="mapLocationStatus" class="map-location-status" role="status">Map centered on Cabanatuan City. Select “Use my location” to center it on your GPS position.</div>
+          </div>
+          <div class="store-list-panel" style="font-size:13px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;">
+              <div style="font-weight:bold;">Store list</div>
+              <button type="button" id="useMyLocationBtn" class="btn" onclick="detectCurrentLocation(null, true)" style="padding:6px 10px;font-size:12px;">Use my location</button>
+            </div>
+            <div id="storeList">Loading stores...</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span>Set Radius</span>
+          <input id="storeRadius" type="range" min="1" max="25" value="5" aria-label="Nearby store search radius" oninput="updateStoreRadiusDisplay()" style="vertical-align:middle;">
+          <output id="radiusValue" for="storeRadius" aria-live="polite">5km</output>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--BUDGET- Set Budget + Spending Overview -->
+<div id="budget" class="screen">
+  <div class="app">
+    <div class="sidebar"></div><!-- filled in by script.js (one shared menu) -->
+    <div class="main">
+      <div class="topbar">
+        <div class="user">👤 user</div>
+      </div>
+      <div class="content">
+        <div class="budget-card">
+          <label for="budgetInput" class="budget-title">Set your budget</label>
+          <div class="budget-row">
+            <input id="budgetInput" class="search" type="number" min="0" step="0.01" placeholder="Amount in PHP">
+            <button type="button" class="btn" onclick="setBudget()">Save budget</button>
+          </div>
+          <div id="budgetMessage" class="budget-message" role="status"></div>
+        </div>
+
+        <div class="budget-card">
+          <div class="budget-title">Spending overview</div>
+          <div class="budget-overview">
+            <div id="budgetRing" class="budget-ring"><span id="budgetRingText">Set a budget</span></div>
+            <div class="budget-figures">
+              <div>Budget: <b id="budgetTotal">0.00</b></div>
+              <div>Spent: <b id="budgetSpent">0.00</b></div>
+              <div>Remaining: <b id="budgetRemaining">0.00</b></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="budget-card">
+          <label for="suggestBudget" class="budget-title">💰 What can my budget buy?</label>
+          <div class="suggest-intro">Enter how much you have and what you need. TipidGo builds the best combination from the lowest prices in our stores.</div>
+          <div class="budget-row">
+            <input id="suggestBudget" class="search" type="number" min="0" step="0.01" placeholder="Your budget, e.g. 500">
+          </div>
+          <div class="suggest-question" id="suggestNeedsLabel">What do you need?</div>
+          <div id="suggestNeeds" class="need-chips" role="group" aria-labelledby="suggestNeedsLabel"></div>
+          <div class="budget-row">
+            <button type="button" class="btn" onclick="suggestForBudget()">Build my combination</button>
+          </div>
+          <div id="suggestMessage" class="budget-message" role="status"></div>
+          <div id="suggestResults" class="suggest-grid"></div>
+        </div>
+
+        <div class="budget-card">
+          <div class="budget-title">🛍️ Smart shopping list</div>
+          <div class="suggest-intro">Build your list, then TipidGo finds the cheapest combination, compares the total at each store, and suggests cheaper alternatives.</div>
+          <div class="budget-row">
+            <input id="slBudget" class="search" type="number" min="0" step="0.01" placeholder="Your budget (optional)" aria-label="Budget for this shopping list">
+          </div>
+          <div class="budget-row">
+            <select id="slProduct" class="search" aria-label="Product"><option value="">Loading products...</option></select>
+            <input id="slQty" class="search sl-qty" type="number" min="1" max="99" step="1" value="1" aria-label="Quantity">
+            <button type="button" class="btn" onclick="slAddItem()">Add to list</button>
+          </div>
+          <div id="slMessage" class="budget-message" role="status"></div>
+          <table class="budget-table sl-table">
+            <thead><tr><th>Item</th><th>Qty</th><th></th></tr></thead>
+            <tbody id="slRows"></tbody>
+          </table>
+          <div class="budget-row sl-actions">
+            <button type="button" class="btn" onclick="slCompare()">Find cheapest &amp; compare stores</button>
+            <button type="button" class="btn sl-secondary" onclick="slClearList()">Clear list</button>
+          </div>
+          <div id="slResults"></div>
+        </div>
+
+        <div class="budget-card">
+          <div class="budget-title">Add an expense</div>
+          <div class="budget-row">
+            <input id="expenseName" class="search" type="text" maxlength="60" placeholder="What did you buy?">
+            <input id="expenseAmount" class="search" type="number" min="0" step="0.01" placeholder="Amount">
+            <button type="button" class="btn" onclick="addExpense()">Add expense</button>
+          </div>
+          <table class="budget-table">
+            <thead><tr><th>Item</th><th>Amount</th><th></th></tr></thead>
+            <tbody id="expenseRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- FEEDBACK- Comments/Rating/Suggestion + Recent Feedback-->
+<div id="feedback" class="screen">
+  <div class="app">
+    <div class="sidebar"></div><!-- filled in by script.js (one shared menu) -->
+    <div class="main">
+      <div class="topbar">
+        <div class="user">👤 user</div>
+      </div>
+      <div class="content">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button type="button" class="btn cat-btn active" onclick="selectFeedbackType('Comments', this)">Comments</button>
+          <button type="button" class="btn cat-btn" onclick="selectFeedbackType('Rating', this)">Rating</button>
+          <button type="button" class="btn cat-btn" onclick="selectFeedbackType('Suggestion', this)">Suggestion</button>
+        </div>
+        <textarea id="feedbackText" class="search" style="width:100%;height:60px;" placeholder="Write your feedback"></textarea>
+        <button class="btn" style="margin-top:8px;" onclick="submitFeedback()">Submit</button>
+
+        <div style="margin-top:14px;font-weight:bold;">Recent Feedback</div>
+        <div id="feedbackList" style="font-size:13px;border:1px solid #ccc;padding:8px;margin-top:6px;">
+          Loading...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--- Request Price Update / Request Product-->
+<div id="request" class="screen">
+  <div class="app">
+    <div class="sidebar"></div><!-- filled in by script.js (one shared menu) -->
+    <div class="main">
+      <div class="topbar">
+        <div class="user">👤 user</div>
+      </div>
+      <div class="content">
+        <div style="display:flex;gap:14px;">
+          <div style="border:1px solid #dfe2ea;border-radius:8px;padding:18px;text-align:center;background:#fff;width:50%;">
+            🏷️<br><b>Request Price Update</b><br>
+            <button class="btn" style="margin-top:8px;" onclick="openRequestForm('Price Update')">Request</button>
+          </div>
+          <div style="border:1px solid #dfe2ea;border-radius:8px;padding:18px;text-align:center;background:#fff;width:50%;">
+            📦<br><b>Request Product</b><br>
+            <button class="btn" style="margin-top:8px;" onclick="openRequestForm('New Product')">Request</button>
+          </div>
+        </div>
+
+        <!-- request details form, shown after a button above is clicked -->
+        <div id="requestFormBox" style="display:none;margin-top:16px;background:#fff;border:1px solid #dfe2ea;border-radius:8px;padding:16px;">
+          <div id="requestFormTitle" style="font-weight:bold;margin-bottom:8px;"></div>
+          <textarea id="requestDetails" class="search" style="width:100%;height:60px;" placeholder="Describe the product or the price correction..."></textarea>
+          <button class="btn" style="margin-top:8px;" onclick="submitRequest()">Submit Request</button>
+        </div>
+
+        <div style="margin-top:16px;font-weight:bold;">Your Requests</div>
+        <div id="requestList" style="font-size:13px;margin-top:6px;">Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- PROFILE -->
+<div id="profile" class="screen">
+  <div class="app">
+    <div class="sidebar"></div><!-- filled in by script.js (one shared menu) -->
+    <div class="main">
+      <div class="topbar">
+        <div class="user">👤 user</div>
+      </div>
+      <div class="content">
+        <div class="budget-card profile-card">
+          <div class="profile-avatar" id="profileAvatar" aria-hidden="true">?</div>
+          <div class="profile-details">
+            <div class="budget-title" id="profileName">Not signed in</div>
+            <div id="profileEmail" class="profile-line"></div>
+            <div id="profileRole" class="profile-line"></div>
+            <div id="profileJoined" class="profile-line"></div>
+            <button type="button" class="btn" style="margin-top:12px;" onclick="openEditProfile()">Edit profile</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--EDIT PROFILE-->
+<div id="editProfile" class="screen">
+  <div class="app">
+    <div class="sidebar"></div><!-- filled in by script.js (one shared menu) -->
+    <div class="main">
+      <div class="topbar">
+        <div class="user">👤 user</div>
+      </div>
+      <div class="content">
+        <div class="budget-card">
+          <div class="budget-title">Edit profile</div>
+          <div class="auth-form" style="max-width:420px;">
+            <div class="auth-field">
+              <label for="editName">Name</label>
+              <input id="editName" class="search" type="text" maxlength="100">
+            </div>
+            <div class="auth-field">
+              <label for="editEmail">Email</label>
+              <input id="editEmail" class="search" type="email" disabled>
+              <small>Your email is your sign-in name and cannot be changed here.</small>
+            </div>
+            <div class="auth-field">
+              <label for="editCurrentPassword">Current password</label>
+              <input id="editCurrentPassword" class="search" type="password" autocomplete="current-password">
+              <small>Only needed if you are setting a new password.</small>
+            </div>
+            <div class="auth-field">
+              <label for="editNewPassword">New password</label>
+              <input id="editNewPassword" class="search" type="password" autocomplete="new-password">
+              <small>At least 8 characters with 1 special character. Leave blank to keep your current one.</small>
+            </div>
+            <div id="editProfileMessage" class="budget-message" role="status"></div>
+            <div class="budget-row">
+              <button type="button" class="btn" onclick="saveProfile()">Save changes</button>
+              <button type="button" class="btn cat-btn" onclick="showScreen('profile')">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!--  SETTINGS -->
+<div id="settings" class="screen">
+  <div class="app">
+    <div class="sidebar"></div><!-- filled in by script.js (one shared menu) -->
+    <div class="main">
+      <div class="topbar">
+        <div class="user">👤 user</div>
+      </div>
+      <div class="content">
+        <div class="budget-card">
+          <div class="budget-title">Settings</div>
+          <button type="button" class="settings-row" onclick="openEditProfile()">
+            <span>Edit your name or password</span><span aria-hidden="true">&rsaquo;</span>
+          </button>
+          <button type="button" class="settings-row" onclick="showScreen('budget')">
+            <span>Open your budget</span><span aria-hidden="true">&rsaquo;</span>
+          </button>
+          <button type="button" class="settings-row" onclick="clearBudgetData()">
+            <span>Clear budget and expenses saved on this device</span><span aria-hidden="true">&rsaquo;</span>
+          </button>
+          <button type="button" class="settings-row" onclick="logout()">
+            <span>Sign out</span><span aria-hidden="true">&rsaquo;</span>
+          </button>
+          <div id="settingsMessage" class="budget-message" role="status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SCRIPT: screen switcher -->
+
+<script src="script.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="api.js"></script>
+<script src="budget-suggestions.js"></script>
+<script src="shopping-list.js"></script>
 </body>
 </html>
